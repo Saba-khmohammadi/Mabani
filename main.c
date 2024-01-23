@@ -14,7 +14,7 @@ void extractText(char* str, char userName[]) {
                 end = i;
                 break;
             }
-        }
+     }
     }
 
 
