@@ -1,113 +1,122 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <errno.h>
-void extractText(char* str, char userName[]) {
-    int start = -1;
-    int end = -1;
-    int len = strlen(str);
+     else if (strncmp(command, "neogit status", 13) == 0)
+        {
+            DIR *dir_s;
+            struct dirent *entry_s;
+            char second_con[100][100];
+            char temp_cond[100][100];
+            int count_s = 0;
+            dir_s = opendir(copy_one_cu);
 
-    for (int i = 0; i < len; i++) {
-        if (str[i] == '\"') {
-            if (start == -1) {
-                start = i + 1;
-            } else {
-                end = i;
-                break;
+            // Read each entry in the directory
+            while ((entry_s = readdir(dir_s)) != NULL)
+            {
+                // Ignore "." and ".." entries
+                if (strcmp(entry_s->d_name, ".") != 0 && strcmp(entry_s->d_name, "..") != 0)
+                {
+                    strcpy(second_con[count_s], entry_s->d_name);
+                    count_s++;
+                }
+            }
+            closedir(dir_s);
+            int flag_for_stat_d = 0;
+            for (i_s = 0; i_s < countt; i_s++)
+            {
+                flag_for_stat_d = 0;
+                for (int j = 0; j < count_s; j++)
+                {
+                    if (flag_for_stat_d == 0)
+                    {
+                        if (strcmp(first_name_cond[i_s], second_con[j]) == 0)
+                        {
+                            flag_for_stat_d = 1;
+                        }
+                    }
+                }
+                if (flag_for_stat_d == 0)
+                {
+                    staging = fopen("staging.txt", "r");
+                    char line[100];
+                    int flag = 0;
+                    while (fgets(line, sizeof(line), staging) != NULL)
+                    {
+                        line[strcspn(line, "\n")] = '\0';
+                        if (strcmp(line, first_name_cond[i_s]) != 0)
+                        {
+                            flag = 1;
+                            strcpy(temp_cond[i_s], first_name_cond[i_s]);
+                            printf("%s || +D\n", first_name_cond[i_s]);
+                            break;
+                        }
+                    }
+                    fclose(staging);
+                    if (flag == 0)
+                    {
+                        strcpy(temp_cond[i_s], first_name_cond[i_s]);
+                        printf("%s || -D\n", first_name_cond[i_s]);
+                    }
+                }
+            }
+            int flag_for_stat_a = 0;
+            for (int k = 0; k < count_s; k++)
+            {
+                flag_for_stat_a = 0;
+                for (int l = 0; l < countt; l++)
+                {
+                    if (flag_for_stat_a == 0)
+                    {
+                        if (strcmp(second_con[k], first_name_cond[l]) == 0)
+                        {
+                            flag_for_stat_a = 1;
+                        }
+                    }
+                }
+                if (flag_for_stat_a == 0)
+                {
+                    staging = fopen("staging.txt", "r");
+                    char line[100];
+                    int flag = 0;
+                    while (fgets(line, sizeof(line), staging) != NULL)
+                    {
+                        line[strcspn(line, "\n")] = '\0';
+                        if (strcmp(line, second_con[k]) != 0)
+                        {
+                            flag = 1;
+                            printf("%s || +A\n", second_con[k]);
+                            break;
+                        }
+                    }
+                    fclose(staging);
+                    if (flag == 0)
+                    {
+                        printf("%s || -A\n", second_con[k]);
+                    }
+                }
+            }
+            struct stat updatedFileStat;
+            time_t updatedLastModifiedTime[256];
+            for (int k = 0; k < countt; k++)
+            {
+                stat(file_address[k], &updatedFileStat);
+                updatedLastModifiedTime[k] = updatedFileStat.st_mtime;
+                if ((lastModifiedTime[k] != updatedLastModifiedTime[k] && strcmp(temp_cond[k], first_name_cond[k]) != 0))
+                {
+                    staging = fopen("staging.txt", "r");
+                    char line[100];
+                    int flag = 0;
+                    while (fgets(line, sizeof(line), staging) != NULL)
+                    {
+                        line[strcspn(line, "\n")] = '\0';
+                        if (strcmp(line, first_name_cond[k]) != 0)
+                        {
+                            printf("%s || +M\n", first_name_cond[k]);
+                            flag = 1;
+                            break;
+                        }
+                    }
+                    if (flag == 0)
+                    {
+                        printf("%s || -M\n", first_name_cond[k]);
+                    }
+                }
             }
         }
-    }
-
-
-        userName[end - start + 1];
-        strncpy(userName, str + start, end - start);
-        userName[end - start] = '\0';
-}
-int isFile(const char* name)
-{
-    DIR* directory = opendir(name);
-    if(errno == ENOTDIR)
-    {
-     return 1;
-    }
-
-    return -1;
-}
-int main() {
-    char userInput[1000];
-    char userName[1000];
-    char Gmail[1000];
-    DIR *dir;
-    struct dirent *entry;
-    int flag = 0;
-    int flag2 = 0;
-    int flag_config = 0;
-    char add[1000];
-
-    while(1){
-    gets(userInput);
-    if (strncmp(userInput, "neogit config --user.name", 25) == 0) {
-        extractText(userInput, userName);
-    }
-    if (strncmp(userInput, "neogit config --user.email", 26) == 0){
-        extractText(userInput, Gmail);
-        FILE *file = fopen("user_info.txt", "w");
-        file = fopen("user_info.txt", "w");
-        if (file != NULL) {
-        fprintf(file, "UserName: %s\n", userName);
-        fprintf(file, "UserGmail: %s\n", Gmail);
-        fclose(file);
-        printf("User info saved successfully.\n");
-    }
-}
-if(strncmp(userInput, "neogit config global --user.name", 32) == 0){
-    extractText(userInput, userName);
-if(flag_config == 1){
-    printf("Error: your username has been set in the project!");
-}
-}
-if(strncmp(userInput, "neogit config global --user.email", 33) == 0){
-    extractText(userInput, Gmail);
-    FILE *file = fopen("user_info.txt", "w");
-        file = fopen("user_info.txt", "w");
-        if (file != NULL) {
-        fprintf(file, "UserName: %s\n", userName);
-        fprintf(file, "UserGmail: %s\n", Gmail);
-        fclose(file);
-        printf("User info saved successfully.\n");flag_config = 1;
-}
-}
-if(strcmp(userInput, "neogit init") == 0){
-    struct stat st = {0};
-    if (stat(".neogit", &st) == 0) {
-        printf("Error: The folder '.neogit' already exists.\n");
-        continue;
-    }
-    int result =  mkdir(".neogit");
-    if (result == 0) {
-        printf("The hidden folder '.neogit' has been created successfully.\n");
-    } else {
-        printf("Error: Failed to create the hidden folder '.neogit'.\n");
-    }
-    }
-
-    if(strncmp(userInput, "neogit add", 10) == 0){
-
-        extractText(userInput,add);
-        const char* directory = ".neogit";printf("%s", directory);
-        dir = opendir(".neogit");
-    if (isFile(directory) == -1) {
-        printf("Unable to find the directory.\n");
-        continue;
-    }
-  
-
-    }
-
-
-}
-    return 0;
-    }
